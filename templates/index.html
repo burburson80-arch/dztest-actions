@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Поросёнок и радио</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="sky">
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    <div class="sun"></div>
+  </div>
+
+  <main class="scene">
+    <header class="title">
+      <h1>Поросёнок под деревом</h1>
+      <p class="subtitle">слушает радио и ловит эфир</p>
+    </header>
+
+    <div class="ground">
+      <div class="tree">
+        <div class="canopy"></div>
+        <div class="trunk"></div>
+        <div class="roots"></div>
+      </div>
+
+      <div class="pig">
+        <div class="ear ear-left"></div>
+        <div class="ear ear-right"></div>
+        <div class="head">
+          <div class="snout">
+            <div class="nostril"></div>
+            <div class="nostril"></div>
+          </div>
+          <div class="eye eye-left"></div>
+          <div class="eye eye-right"></div>
+        </div>
+        <div class="body"></div>
+        <div class="leg leg-1"></div>
+        <div class="leg leg-2"></div>
+        <div class="leg leg-3"></div>
+        <div class="leg leg-4"></div>
+        <div class="tail"></div>
+      </div>
+
+      <div class="radio">
+        <div class="radio-body">
+          <div class="speaker"></div>
+          <div class="dial">
+            <div class="needle" id="needle"></div>
+          </div>
+          <div class="knob"></div>
+        </div>
+        <div class="antenna"></div>
+        <div class="signal-waves">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+
+    <section class="panel">
+      <div class="station-display">
+        <span class="label">Сейчас в эфире</span>
+        <h2 id="station-name">—</h2>
+        <p id="station-info"><span id="station-freq">—</span> МГц · <span id="station-genre">—</span></p>
+      </div>
+
+      <div class="status">
+        <span class="indicator" id="signal-indicator"></span>
+        <span id="status-text">Настройка приёмника…</span>
+      </div>
+
+      <div class="static-bar" id="static-bar">
+        <div class="static-fill" id="static-fill"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    window.STATIONS = {{ stations | tojson }};
+  </script>
+  <script src="{{ url_for('static', filename='js/radio.js') }}"></script>
+</body>
+</html>
