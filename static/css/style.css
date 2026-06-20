@@ -117,6 +117,20 @@ body {
   opacity: 0.7;
 }
 
+.source-link {
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.source-link a {
+  color: #3d7a45;
+  text-decoration: none;
+}
+
+.source-link a:hover {
+  text-decoration: underline;
+}
+
 .status {
   display: flex;
   align-items: center;

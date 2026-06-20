@@ -3,17 +3,22 @@
 
   const stations = window.STATIONS || [];
   let currentIndex = -1;
+  let started = false;
+  let switchTimer = null;
+
   let audioCtx = null;
   let noiseNode = null;
   let gainNode = null;
-  let toneOsc = null;
-  let toneGain = null;
-  let switchTimer = null;
+
+  const radioAudio = new Audio();
+  radioAudio.preload = "none";
 
   const els = {
     name: document.getElementById("station-name"),
-    freq: document.getElementById("station-freq"),
+    bitrate: document.getElementById("station-bitrate"),
+    country: document.getElementById("station-country"),
     genre: document.getElementById("station-genre"),
+    source: document.getElementById("station-source"),
     status: document.getElementById("status-text"),
     indicator: document.getElementById("signal-indicator"),
     staticBar: document.getElementById("static-bar"),
@@ -21,7 +26,7 @@
     scene: document.querySelector(".scene"),
   };
 
-  function initAudio() {
+  function initStaticAudio() {
     if (audioCtx) return;
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -48,14 +53,14 @@
     filter.connect(gainNode);
     gainNode.connect(audioCtx.destination);
     noiseNode.start();
+  }
 
-    toneOsc = audioCtx.createOscillator();
-    toneGain = audioCtx.createGain();
-    toneGain.gain.value = 0;
-    toneOsc.type = "sine";
-    toneOsc.connect(toneGain);
-    toneGain.connect(audioCtx.destination);
-    toneOsc.start();
+  function resumeAudioContext() {
+    initStaticAudio();
+    if (audioCtx.state === "suspended") {
+      return audioCtx.resume();
+    }
+    return Promise.resolve();
   }
 
   function playStatic(durationMs) {
@@ -71,7 +76,6 @@
     }
 
     gainNode.gain.linearRampToValueAtTime(0, now + durationMs / 1000);
-
     playCrackle(durationMs);
   }
 
@@ -93,20 +97,30 @@
     }
   }
 
-  function playStationTone(station) {
-    if (!audioCtx || !toneOsc) return;
+  function stopStream() {
+    radioAudio.pause();
+    radioAudio.removeAttribute("src");
+    radioAudio.load();
+  }
 
-    const baseFreq = 180 + parseFloat(station.freq) * 2;
-    const now = audioCtx.currentTime;
+  function playStream(station) {
+    if (!station) return Promise.resolve();
 
-    toneOsc.frequency.cancelScheduledValues(now);
-    toneOsc.frequency.setValueAtTime(baseFreq * 0.7, now);
-    toneOsc.frequency.exponentialRampToValueAtTime(baseFreq, now + 0.3);
+    stopStream();
 
-    toneGain.gain.cancelScheduledValues(now);
-    toneGain.gain.setValueAtTime(0, now);
-    toneGain.gain.linearRampToValueAtTime(0.04 + Math.random() * 0.03, now + 0.2);
-    toneGain.gain.linearRampToValueAtTime(0.025, now + 2);
+    function tryPlay(url, allowFallback) {
+      radioAudio.src = url;
+      return radioAudio.play().catch(() => {
+        if (allowFallback && station.fallback && station.fallback !== url) {
+          return tryPlay(station.fallback, false);
+        }
+        els.status.textContent = "Плохой приём — «" + station.name + "»";
+        els.indicator.className = "indicator tuning";
+        return Promise.reject();
+      });
+    }
+
+    return tryPlay(station.stream, true);
   }
 
   function setUIState(state, station) {
@@ -118,12 +132,21 @@
     if (state === "tuning") {
       els.status.textContent = "Шипение… настройка частоты…";
       els.name.classList.add("fading");
-    } else if (station) {
-      els.status.textContent = "Принимаем «" + station.name + "»";
-      els.name.classList.remove("fading");
-      els.name.textContent = station.name;
-      els.freq.textContent = station.freq;
-      els.genre.textContent = station.genre;
+      return;
+    }
+
+    if (!station) return;
+
+    els.status.textContent = "Принимаем «" + station.name + "»";
+    els.name.classList.remove("fading");
+    els.name.textContent = station.name;
+    els.bitrate.textContent = station.bitrate || "—";
+    els.country.textContent = station.country || "—";
+    els.genre.textContent = station.genre || "—";
+
+    if (els.source && station.source) {
+      els.source.href = station.source;
+      els.source.textContent = "Radio-Vibe.com";
     }
   }
 
@@ -136,10 +159,8 @@
   }
 
   function switchStation() {
-    initAudio();
-    if (audioCtx.state === "suspended") {
-      audioCtx.resume();
-    }
+    resumeAudioContext();
+    stopStream();
 
     setUIState("tuning");
     const staticDuration = 800 + Math.random() * 1200;
@@ -149,12 +170,12 @@
       currentIndex = pickNextStation();
       const station = stations[currentIndex];
       setUIState("playing", station);
-      playStationTone(station);
+      playStream(station);
     }, staticDuration);
   }
 
   function scheduleNextSwitch() {
-    const delay = 4000 + Math.random() * 8000;
+    const delay = 15000 + Math.random() * 25000;
     switchTimer = setTimeout(() => {
       switchStation();
       scheduleNextSwitch();
@@ -162,27 +183,32 @@
   }
 
   function start() {
-    document.body.addEventListener(
-      "click",
-      function unlock() {
-        initAudio();
-        if (audioCtx.state === "suspended") audioCtx.resume();
-        document.body.removeEventListener("click", unlock);
-      },
-      { once: true }
-    );
-
+    if (started) return;
+    started = true;
     switchStation();
     scheduleNextSwitch();
   }
 
+  function bindUnlock() {
+    els.status.textContent = "Нажмите на страницу, чтобы включить радио…";
+
+    document.body.addEventListener(
+      "click",
+      () => {
+        resumeAudioContext().then(start);
+      },
+      { once: true }
+    );
+  }
+
   if (stations.length) {
-    start();
+    bindUnlock();
   } else {
     els.status.textContent = "Станции не найдены";
   }
 
   window.addEventListener("beforeunload", () => {
     if (switchTimer) clearTimeout(switchTimer);
+    stopStream();
   });
 })();
