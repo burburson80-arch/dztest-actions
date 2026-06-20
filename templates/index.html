@@ -7,59 +7,22 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <div class="sky">
-    <div class="cloud cloud-1"></div>
-    <div class="cloud cloud-2"></div>
-    <div class="cloud cloud-3"></div>
-    <div class="sun"></div>
-  </div>
-
   <main class="scene">
     <header class="title">
       <h1>Поросёнок под деревом</h1>
       <p class="subtitle">слушает радио и ловит эфир</p>
     </header>
 
-    <div class="ground">
-      <div class="tree">
-        <div class="canopy"></div>
-        <div class="trunk"></div>
-        <div class="roots"></div>
-      </div>
-
-      <div class="pig">
-        <div class="ear ear-left"></div>
-        <div class="ear ear-right"></div>
-        <div class="head">
-          <div class="snout">
-            <div class="nostril"></div>
-            <div class="nostril"></div>
-          </div>
-          <div class="eye eye-left"></div>
-          <div class="eye eye-right"></div>
-        </div>
-        <div class="body"></div>
-        <div class="leg leg-1"></div>
-        <div class="leg leg-2"></div>
-        <div class="leg leg-3"></div>
-        <div class="leg leg-4"></div>
-        <div class="tail"></div>
-      </div>
-
-      <div class="radio">
-        <div class="radio-body">
-          <div class="speaker"></div>
-          <div class="dial">
-            <div class="needle" id="needle"></div>
-          </div>
-          <div class="knob"></div>
-        </div>
-        <div class="antenna"></div>
-        <div class="signal-waves">
-          <span></span><span></span><span></span>
-        </div>
-      </div>
-    </div>
+    <figure class="hero">
+      <img
+        src="{{ url_for('static', filename='images/pig-radio.jpg') }}"
+        alt="Свинья под деревом слушает радиоприёмник"
+        class="hero-image"
+        width="1024"
+        height="1024"
+      >
+      <div class="static-overlay" id="static-overlay" aria-hidden="true"></div>
+    </figure>
 
     <section class="panel">
       <div class="station-display">

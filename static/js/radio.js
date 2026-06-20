@@ -17,7 +17,7 @@
     status: document.getElementById("status-text"),
     indicator: document.getElementById("signal-indicator"),
     staticBar: document.getElementById("static-bar"),
-    needle: document.getElementById("needle"),
+    staticOverlay: document.getElementById("static-overlay"),
     scene: document.querySelector(".scene"),
   };
 
@@ -112,6 +112,7 @@
   function setUIState(state, station) {
     els.indicator.className = "indicator " + state;
     els.staticBar.classList.toggle("active", state === "tuning");
+    els.staticOverlay.classList.toggle("active", state === "tuning");
     els.scene.classList.toggle("static-shake", state === "tuning");
 
     if (state === "tuning") {
@@ -123,9 +124,6 @@
       els.name.textContent = station.name;
       els.freq.textContent = station.freq;
       els.genre.textContent = station.genre;
-
-      const angle = -90 + (parseFloat(station.freq) - 88) * 12;
-      els.needle.style.transform = "translateX(-50%) rotate(" + angle + "deg)";
     }
   }
 
